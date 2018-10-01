@@ -1,28 +1,22 @@
-/**
- * @author       Digitsensitive <digit.sensitivee@gmail.com>
- * @copyright    2018 Digitsensitive
- * @description  Coin Runner
- * @license      Digitsensitive
- */
-
 /// <reference path="../phaser.d.ts"/>
 
 import "phaser";
 import { GameScene } from "./scenes/game-scene";
+import { GameoverScene } from "./scenes/gameover-scene";
 
 const config: GameConfig = {
   title: "Coin Runner",
   url: "https://github.com/digitsensitive/phaser3-typescript",
   version: "1.1.1",
-  width: 768,
-  height: 576,
+  width: 750,
+  height: 1334,
   type: Phaser.AUTO,
   parent: "game",
-  scene: [GameScene],
+  scene: [GameScene, GameoverScene],
   input: {
     keyboard: true
   },
-  backgroundColor: "#3A99D9",
+  backgroundColor: "#66808f",
   pixelArt: false
 };
 

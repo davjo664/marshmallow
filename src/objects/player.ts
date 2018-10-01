@@ -5,10 +5,12 @@
  * @license      Digitsensitive
  */
 
-export class Player extends Phaser.GameObjects.Image {
+export class Player extends Phaser.GameObjects.Sprite {
   private currentScene: Phaser.Scene;
   private cursors: CursorKeys;
   private walkingSpeed: number;
+  private increasedVelocityRight: Boolean = false;
+  private increasedVelocityLeft: Boolean = false;
 
   constructor(params) {
     super(params.scene, params.x, params.y, params.key);
@@ -17,7 +19,32 @@ export class Player extends Phaser.GameObjects.Image {
     this.initImage();
     this.initInput();
 
-    this.currentScene.add.existing(this);
+
+    // params.scene.anims.create({
+    //   key: 'left',
+    //   frames: params.scene.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
+    //   frameRate: 10,
+    //   repeat: -1
+    // });
+
+    // params.scene.anims.create({
+    //     key: 'turn',
+    //     frames: [ { key: 'dude', frame: 4 } ],
+    //     frameRate: 20
+    // });
+
+    // params.scene.anims.create({
+    //     key: 'right',
+    //     frames: params.scene.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
+    //     frameRate: 10,
+    //     repeat: -1
+    // });
+
+    params.scene.add.existing(this);
+    params.scene.physics.world.enable(this);
+    this.setScale(0.5,0.5);
+    this.body.setMaxVelocity(900,900)
+    // this.body.setCollideWorldBounds(true); //Phaser.Physics.Arcade.Body
   }
 
   private initVariables(params): void {
@@ -35,19 +62,68 @@ export class Player extends Phaser.GameObjects.Image {
 
   update(): void {
     this.handleInput();
+    if(this.x < 0) {
+      this.setPosition(this.currentScene.sys.canvas.width,this.y);
+    }
+    if(this.x > this.currentScene.sys.canvas.width) {
+      this.setPosition(0,this.y);
+    }
   }
 
   private handleInput(): void {
     if (this.cursors.right.isDown) {
-      this.x += this.walkingSpeed;
+      if(this.increasedVelocityLeft) {
+        this.body.setMaxVelocity(900, 900);
+      }
+      this.body.setAccelerationX(8000);
+      // this.setRotation(0.2);
+      // this.anims.play('right',true);
       this.setFlipX(false);
     } else if (this.cursors.left.isDown) {
-      this.x -= this.walkingSpeed;
+      if(this.increasedVelocityRight) {
+        this.body.setMaxVelocity(900, 900);
+      }
+      this.body.setAccelerationX(-8000);
+      // this.setRotation(-0.2);
+      // this.anims.play('left',true);
       this.setFlipX(true);
-    } else if (this.cursors.up.isDown) {
-      this.y -= this.walkingSpeed;
-    } else if (this.cursors.down.isDown) {
-      this.y += this.walkingSpeed;
+    } 
+    else
+    {
+      this.body.setVelocityX(0);
+      this.body.setAccelerationX(0);
+      // this.setRotation(0);
+      // this.anims.play('turn');
     }
+
+    if (this.cursors.up.isDown && this.body.touching.right)
+    {
+      console.log("jump left up")
+      this.body.setMaxVelocity(5000,5000);
+      this.increasedVelocityRight = true;
+      this.body.setVelocityY(-700);
+      this.body.setVelocityX(-1400);
+      let timeEvent = this.currentScene.time.addEvent({ delay: 200, callback: this.timer, callbackScope: this });
+      
+    } else if (this.cursors.up.isDown && this.body.touching.left)
+    {
+      console.log("jump right up")
+      this.body.setMaxVelocity(5000,5000);
+      this.increasedVelocityLeft = true;
+      this.body.setVelocityY(-700);
+      this.body.setVelocityX(1400);
+      let timeEvent = this.currentScene.time.addEvent({ delay: 200, callback: this.timer, callbackScope: this });
+    }
+    else if (this.cursors.up.isDown && this.body.touching.down)
+    {
+      console.log("jump straight")
+      this.body.setVelocityY(-600);
+    } 
+  }
+
+  private timer() {
+    this.body.setMaxVelocity(900, 900);
+    this.increasedVelocityLeft = false;
+    this.increasedVelocityRight = false;
   }
 }
