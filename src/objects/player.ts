@@ -1,23 +1,22 @@
-/**
- * @author       Digitsensitive <digit.sensitivee@gmail.com>
- * @copyright    2018 Digitsensitive
- * @description  Coin Runner: Player
- * @license      Digitsensitive
- */
-
 export class Player extends Phaser.GameObjects.Sprite {
   private currentScene: Phaser.Scene;
   private cursors: CursorKeys;
   private walkingSpeed: number;
   private increasedVelocityRight: Boolean = false;
   private increasedVelocityLeft: Boolean = false;
+  private highestClimed: number = 0;
+  private floorY: number = 0;
+  private climbed: number = 0;
 
   constructor(params) {
     super(params.scene, params.x, params.y, params.key);
-
+    
     this.initVariables(params);
     this.initImage();
     this.initInput();
+
+    this.floorY = params.floorY;
+    this.setDepth(1);
 
 
     // params.scene.anims.create({
@@ -68,6 +67,11 @@ export class Player extends Phaser.GameObjects.Sprite {
     if(this.x > this.currentScene.sys.canvas.width) {
       this.setPosition(0,this.y);
     }
+
+    this.climbed = -this.getBottomLeft().y+this.floorY;
+    if (this.climbed > this.highestClimed) {
+      this.highestClimed = this.climbed;
+    }
   }
 
   private handleInput(): void {
@@ -117,6 +121,7 @@ export class Player extends Phaser.GameObjects.Sprite {
     else if (this.cursors.up.isDown && this.body.touching.down)
     {
       console.log("jump straight")
+      console.log("y: " + this.y + "     highest: " + this.highestClimed);
       this.body.setVelocityY(-600);
     } 
   }
@@ -125,5 +130,13 @@ export class Player extends Phaser.GameObjects.Sprite {
     this.body.setMaxVelocity(900, 900);
     this.increasedVelocityLeft = false;
     this.increasedVelocityRight = false;
+  }
+
+  public getHighestClimed(): string {
+    return this.highestClimed.toFixed()+"";
+  }
+
+  public getClimbed(): string {
+    return this.climbed > 0 ? this.climbed.toFixed()+"" : 0+"";
   }
 }

@@ -6,8 +6,7 @@ import { GameoverScene } from "./scenes/gameover-scene";
 
 const config: GameConfig = {
   title: "Coin Runner",
-  url: "https://github.com/digitsensitive/phaser3-typescript",
-  version: "1.1.1",
+  version: "1.0.0",
   width: 750,
   height: 1334,
   type: Phaser.AUTO,
@@ -16,7 +15,7 @@ const config: GameConfig = {
   input: {
     keyboard: true
   },
-  backgroundColor: "#66808f",
+  backgroundColor: "#71859e",
   pixelArt: false
 };
 

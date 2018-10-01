@@ -6,6 +6,7 @@ export class GameScene extends Phaser.Scene {
   private player: Player;
   private camera: Phaser.Cameras.Sprite3D.Camera;
   private coinsCollectedText: Phaser.GameObjects.Text;
+  private highestClimbed: Phaser.GameObjects.Text;
   private cursors: CursorKeys;
   private floorHeight: number;
   private customPipeline2: any;
@@ -29,15 +30,18 @@ export class GameScene extends Phaser.Scene {
   preload(): void {
 
     this.load.image("background","./src/assets/background.png");
-    this.load.image("player", "./src/assets/rundare.png");
-    this.load.image("block", "./src/assets/block.png");
+    this.load.image("player", "./src/assets/rundare2.png");
+    this.load.image("block", "./src/assets/block4.png");
     this.load.image("coin", "./src/assets/coin.png");
-    this.load.image("floor", "./src/assets/floor.png");
+    this.load.image("floor", "./src/assets/floor2.png");
     this.load.image("normalmap", "./src/assets/normalmap.png");
+    this.load.image("pause", "./src/assets/pause.png");
     this.load.spritesheet('dude', 
         './src/assets/dude.png',
         { frameWidth: 32, frameHeight: 48 }
     );
+
+    this.load.atlas('flares', './src/assets/flares.png', './src/assets/flares.json');
   }
 
   init(): void {
@@ -45,6 +49,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
+
     // this.initShader();
 
     //  Camera at 0x0x200 and looking at 0x0x0
@@ -74,13 +79,30 @@ export class GameScene extends Phaser.Scene {
       scene: this,
       x: this.sys.canvas.width / 2,
       y: this.sys.canvas.height / 2,
+      floorY: this.floor.body.y,
       key: "player"
     });
+
+    this.highestClimbed = this.add.text(
+      20,
+      20,
+      0 + "",
+      {
+        fontFamily: "Connection",
+        fontSize: 58,
+        stroke: "#fff",
+        strokeThickness: 6,
+        fill: "#000000"
+      }
+    ).setScrollFactor(0); //Fixed to camera
+
+    this.highestClimbed.setDepth(1);
+    
 
     // // create texts
     this.coinsCollectedText = this.add.text(
       20,
-      20,
+      80,
       0 + "",
       {
         fontFamily: "Connection",
@@ -89,12 +111,25 @@ export class GameScene extends Phaser.Scene {
         strokeThickness: 6,
         fill: "#000000"
       }
-    )
+    ).setScrollFactor(0); //Fixed to camera
 
-    this.coinsCollectedText.setScrollFactor(0); //Fixed to camera
+    this.coinsCollectedText.setDepth(1);
+
     this.coinsCollectedText.setInteractive();
 
+    let pause = this.add.image(this.sys.canvas.width,0,'pause');
+    pause.setScale(0.08,0.08);
+    pause.setX(pause.x-pause.displayWidth/2-20);
+    pause.setY(pause.displayHeight/2+20)
+    pause.setScrollFactor(0); //Fixed to camera
+    pause.setInteractive();
+    pause.setDepth(1);
+
     this.coinsCollectedText.on('pointerdown', () => { 
+      this.gameOver();
+    });
+
+    pause.on('pointerdown', () => { 
       this.physics.world.isPaused ? this.physics.world.resume() : this.physics.world.pause();
     });
 
@@ -111,7 +146,7 @@ export class GameScene extends Phaser.Scene {
     });
     this.physics.add.collider(this.blocks, this.player, (player,block) => {
       if (player.body.touching.up && player.body.touching.down) {
-        console.log("game over")
+        this.gameOver();
       }
       if (player.body.touching.right || player.body.touching.left) {
         player.body.setVelocityY(70);
@@ -119,7 +154,7 @@ export class GameScene extends Phaser.Scene {
     });
     this.physics.add.collider(this.player, this.floor, (player,block) => {
       if (player.body.touching.up) {
-        console.log("GAME OVER");
+        this.gameOver();
       }
     });
 
@@ -127,6 +162,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   createBlock(): void {
+    // this.cameras.main.shake(1000);
     if (!this.physics.world.isPaused) {
       let y: number = this.floor.y;
       this.blocks.getChildren().forEach((block) => {
@@ -182,12 +218,41 @@ export class GameScene extends Phaser.Scene {
 
   private updateCoinStatus(): void {
     // this.collectedCoins++;
-    this.coinsCollectedText.setText(parseFloat(-this.player.getBottomLeft().y+this.floor.body.y).toFixed() + "");
+    this.coinsCollectedText.setText(this.player.getClimbed());
+    this.highestClimbed.setText(this.player.getHighestClimed());
   }
 
   updateShader(): void {
     this.customPipeline2.setFloat1('time', this.time2);
     this.time2 += 0.01;
+  }
+
+  gameOver(): void {
+    console.log("gameOver");
+    // this.player.body.destroy();
+    this.tweens.add({
+      targets: this.player,
+      scaleY: 0,
+      duration: 50
+  });
+    var particles = this.add.particles('flares');
+    particles.createEmitter({
+      frame: [ 'red', 'yellow', 'blue', 'green' ],
+      x: this.player.body.x,
+      y: this.player.body.y,
+      lifespan: 2000,
+      speed: 200,
+      scale: { start: 0.7, end: 0 },
+      blendMode: 'ADD'
+  });
+    // this.time.addEvent({ delay: 800, callback: () => this.scene.setActive(false), callbackScope: this, loop: false });
+    //   this.scene.transition({
+    //     target: 'GameoverScene',
+    //     duration: 1000
+    // });
+
+    // this.scene.launch('GameoverScene');
+    this.scene.run('GameoverScene', {climbed: this.player.getHighestClimed()});
   }
 
   initShader(): void {
