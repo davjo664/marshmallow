@@ -133,10 +133,10 @@ export class Player extends Phaser.GameObjects.Sprite {
   }
 
   public getHighestClimed(): string {
-    return this.highestClimed.toFixed()+"";
+    return (this.highestClimed/10).toFixed()+"";
   }
 
   public getClimbed(): string {
-    return this.climbed > 0 ? this.climbed.toFixed()+"" : 0+"";
+    return this.climbed > 0 ? (this.climbed/10).toFixed()+"" : 0+"";
   }
 }
