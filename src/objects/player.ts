@@ -1,133 +1,112 @@
 export class Player extends Phaser.GameObjects.Sprite {
   private currentScene: Phaser.Scene;
   private cursors: CursorKeys;
-  private walkingSpeed: number;
   private increasedVelocityRight: Boolean = false;
   private increasedVelocityLeft: Boolean = false;
   private highestClimed: number = 0;
   private floorY: number = 0;
   private climbed: number = 0;
+  private animationTime: number = 0;
+  private renderPipeline: any;
+  private isDead = false;
+  private comboPoints = 0;
+  private velocityMultiplier = 0;
 
   constructor(params) {
     super(params.scene, params.x, params.y, params.key);
     
-    this.initVariables(params);
-    this.initImage();
-    this.initInput();
+    this.currentScene = params.scene;
+    this.setOrigin(0.5, 0.5);
+    this.cursors = this.currentScene.input.keyboard.createCursorKeys();
 
     this.floorY = params.floorY;
     this.setDepth(1);
 
-
-    // params.scene.anims.create({
-    //   key: 'left',
-    //   frames: params.scene.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
-    //   frameRate: 10,
-    //   repeat: -1
-    // });
-
-    // params.scene.anims.create({
-    //     key: 'turn',
-    //     frames: [ { key: 'dude', frame: 4 } ],
-    //     frameRate: 20
-    // });
-
-    // params.scene.anims.create({
-    //     key: 'right',
-    //     frames: params.scene.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
-    //     frameRate: 10,
-    //     repeat: -1
-    // });
-
     params.scene.add.existing(this);
     params.scene.physics.world.enable(this);
-    this.setScale(0.5,0.5);
-    this.body.setMaxVelocity(900,900)
-    // this.body.setCollideWorldBounds(true); //Phaser.Physics.Arcade.Body
-  }
+    let ratio = this.height/this.width;
+    this.setScale(params.scene.sys.canvas.width/30/this.width*ratio,params.scene.sys.canvas.width/30/this.width);
 
-  private initVariables(params): void {
-    this.currentScene = params.scene;
-    this.walkingSpeed = 5;
-  }
+    this.velocityMultiplier = params.scene.sys.canvas.width/1800;
+    this.body.setMaxVelocity(900*this.velocityMultiplier,900*this.velocityMultiplier)
 
-  private initImage(): void {
-    this.setOrigin(0.5, 0.5);
-  }
-
-  private initInput(): void {
-    this.cursors = this.currentScene.input.keyboard.createCursorKeys();
+    this.initShader();
   }
 
   update(): void {
-    this.handleInput();
-    if(this.x < 0) {
-      this.setPosition(this.currentScene.sys.canvas.width,this.y);
+    if (!this.isDead) {
+      this.handleInput();
     }
-    if(this.x > this.currentScene.sys.canvas.width) {
-      this.setPosition(0,this.y);
+    if(this.x < -30) {
+      this.setPosition(this.currentScene.sys.canvas.width+30,this.y);
+    }
+    if(this.x > this.currentScene.sys.canvas.width+30) {
+      this.setPosition(-30,this.y);
     }
 
     this.climbed = -this.getBottomLeft().y+this.floorY;
     if (this.climbed > this.highestClimed) {
       this.highestClimed = this.climbed;
     }
+
+    this.updateShader();
   }
 
   private handleInput(): void {
     if (this.cursors.right.isDown) {
       if(this.increasedVelocityLeft) {
-        this.body.setMaxVelocity(900, 900);
+        this.body.setMaxVelocity(900*this.velocityMultiplier, 900*this.velocityMultiplier);
       }
-      this.body.setAccelerationX(8000);
-      // this.setRotation(0.2);
-      // this.anims.play('right',true);
+      this.body.setAccelerationX(8000*this.velocityMultiplier);
       this.setFlipX(false);
     } else if (this.cursors.left.isDown) {
       if(this.increasedVelocityRight) {
-        this.body.setMaxVelocity(900, 900);
+        this.body.setMaxVelocity(900*this.velocityMultiplier, 900*this.velocityMultiplier);
       }
-      this.body.setAccelerationX(-8000);
-      // this.setRotation(-0.2);
-      // this.anims.play('left',true);
-      this.setFlipX(true);
+      this.body.setAccelerationX(-8000*this.velocityMultiplier);
+      // this.setFlipX(true);
     } 
     else
     {
       this.body.setVelocityX(0);
       this.body.setAccelerationX(0);
-      // this.setRotation(0);
-      // this.anims.play('turn');
     }
 
     if (this.cursors.up.isDown && this.body.touching.right)
     {
+      if (!this.body.touching.down) {
+        this.comboPoints++;
+        console.log("COMBO POINT " + this.comboPoints);
+      } else {
+        this.comboPoints = 0;
+      }
       console.log("jump left up")
-      this.body.setMaxVelocity(5000,5000);
+      this.body.setMaxVelocity(5000*this.velocityMultiplier,5000*this.velocityMultiplier);
       this.increasedVelocityRight = true;
-      this.body.setVelocityY(-700);
-      this.body.setVelocityX(-1400);
+      this.body.setVelocityY(-700*this.velocityMultiplier);
+      this.body.setVelocityX(-1400*this.velocityMultiplier);
       let timeEvent = this.currentScene.time.addEvent({ delay: 200, callback: this.timer, callbackScope: this });
       
     } else if (this.cursors.up.isDown && this.body.touching.left)
     {
       console.log("jump right up")
-      this.body.setMaxVelocity(5000,5000);
+      this.body.setMaxVelocity(5000*this.velocityMultiplier,5000*this.velocityMultiplier);
       this.increasedVelocityLeft = true;
-      this.body.setVelocityY(-700);
-      this.body.setVelocityX(1400);
+      this.body.setVelocityY(-700*this.velocityMultiplier);
+      this.body.setVelocityX(1400*this.velocityMultiplier);
       let timeEvent = this.currentScene.time.addEvent({ delay: 200, callback: this.timer, callbackScope: this });
     }
-    else if (this.cursors.up.isDown && this.body.touching.down)
+    else if (this.cursors.up.isDown /*&& this.body.touching.down*/)
     {
       console.log("jump straight")
-      console.log("y: " + this.y + "     highest: " + this.highestClimed);
-      this.body.setVelocityY(-600);
+      // console.log("y: " + this.y + "     highest: " + this.highestClimed);
+      this.body.setVelocityY(-600*this.velocityMultiplier);
+      this.comboPoints = 0;
     } 
   }
 
   private timer() {
-    this.body.setMaxVelocity(900, 900);
+    this.body.setMaxVelocity(900*this.velocityMultiplier, 900*this.velocityMultiplier);
     this.increasedVelocityLeft = false;
     this.increasedVelocityRight = false;
   }
@@ -138,5 +117,69 @@ export class Player extends Phaser.GameObjects.Sprite {
 
   public getClimbed(): string {
     return this.climbed > 0 ? (this.climbed/10).toFixed()+"" : 0+"";
+  }
+
+  updateShader(): void {
+    if( -this.body.velocity.y/1400 > 0) {
+      this.renderPipeline.setFloat1('time', 1-this.body.velocity.y/1400);
+    } else {
+      this.renderPipeline.setFloat1('time', 1);
+    }
+    
+    // this.renderPipeline.setFloat1('time2', Math.abs(1+this.body.velocity.x/1000));
+    // console.log(Math.abs(1+this.body.velocity.x/1000));
+    // this.renderPipeline.setFloat1('time2', Math.abs(this.body.velocity.x/8000));
+    if( this.body.velocity.x != 0) {
+      this.renderPipeline.setFloat1('time2', 1.2);
+    } else {
+      this.renderPipeline.setFloat1('time2', 1);
+    }
+    
+    this.animationTime += 0.015;
+}
+
+initShader(): void {
+    const renderer = this.currentScene.sys.game.renderer as Phaser.Renderer.WebGL.WebGLRenderer
+    if (!renderer.getPipeline('PlayerPipeline')) {
+      const game = this.currentScene.sys.game;
+      let shader = new Phaser.Renderer.WebGL.Pipelines.TextureTintPipeline({
+        game: game,
+        renderer: renderer,
+        fragShader: [
+          "precision mediump float;",
+
+          "uniform float     time;",
+          "uniform float     time2;",
+          "uniform vec2      resolution;",
+          "uniform sampler2D uMainSampler;",
+          "varying vec2 outTexCoord;",
+
+          "void main( void ) {",
+
+              "vec2 uv = outTexCoord;",
+              "uv.y = time*uv.y;",
+              "uv.x = time2*uv.x;",
+              "if(uv.y>1.0 || uv.y < 0.0){ gl_FragColor = vec4(0.0);return;}",
+              "//if(uv.x>1.0 || uv.x < 0.0){ gl_FragColor = vec4(0.0);return;}",
+              "vec4 texColor = texture2D(uMainSampler, uv);",
+              "gl_FragColor = texColor;",
+
+          "}"
+          ].join('\n')
+      });
+      this.renderPipeline = renderer.addPipeline('PlayerPipeline', shader)
+    } else {
+      this.renderPipeline = renderer.getPipeline('PlayerPipeline');
+    }
+      this.renderPipeline.setFloat1('time', this.animationTime);
+      this.renderPipeline.setFloat2('resolution', this.currentScene.sys.canvas.width, this.currentScene.sys.canvas.height);
+      this.setPipeline('PlayerPipeline');
+  }
+
+  getSidewaysJump(): boolean {
+    if (this.increasedVelocityLeft || this.increasedVelocityRight) {
+      return true;
+    } 
+    return false;
   }
 }

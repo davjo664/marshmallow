@@ -13,10 +13,10 @@ export class CloudGenerator {
     createCloud(): void {
         let rnd = Phaser.Math.RND.integerInRange(this.currentScene.cameras.main.scrollY,this.currentScene.cameras.main.scrollY+this.currentScene.sys.canvas.height);
         let rndScale = Phaser.Math.RND.integerInRange(3,6)/10;
-        let rndDuration = Phaser.Math.RND.integerInRange(5000,10000);
+        let rndDuration = Phaser.Math.RND.integerInRange(8000,12000);
         let cloud = this.currentScene.add.image(-200,rnd,this.textureKey).setScale(rndScale,rndScale);
         cloud.setDepth(Math.random() >= 0.5 ? -1 : 1);
-        let tween = this.currentScene.tweens.add({
+        this.currentScene.tweens.add({
             targets: cloud,
             x: this.currentScene.sys.canvas.width+200,
             ease: 'easeInOut',

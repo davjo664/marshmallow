@@ -14,7 +14,7 @@ export class Block extends Phaser.GameObjects.Image {
         if(hsv[i] && hsv[i].color) {
         this.setTint(hsv[i].color);
         }
-        this.body.setSize(this.body.width, this.body.height-70,true);
-        this.body.setOffset(0,50);
+        this.body.setSize(this.body.width-60, this.body.height-70,true);
+        this.body.setOffset(30,50);
     }
 }

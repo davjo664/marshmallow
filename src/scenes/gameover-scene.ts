@@ -27,6 +27,14 @@ export class GameoverScene extends Phaser.Scene {
 
   create(data): void {
 
+    // Store
+    console.log(data.climbed)
+    console.log(localStorage.getItem("highscore"));
+    if (!localStorage.getItem("highscore") || data.climbed > parseFloat(localStorage.getItem("highscore"))) {
+      console.log("YES");
+      localStorage.setItem("highscore", data.climbed);
+    }
+
     this.input.once('pointerdown', () => {
       console.log("START");
       this.scene.stop('GameoverScene');
@@ -36,6 +44,7 @@ export class GameoverScene extends Phaser.Scene {
       // this.scene.launch('GameScene');
 
   }, this);
+  
 
     var planet = this.add.image(-1000, this.sys.canvas.height/2, 'square').setScale(0.6,0.4);
 
@@ -52,25 +61,47 @@ export class GameoverScene extends Phaser.Scene {
       }
     )
 
-    let climbedText = this.add.text(
+    let highestScore = this.add.text(
       -this.sys.canvas.width,
-      planet.getTopLeft().y+50,
-      "YOU CLIMBED:" + "",
+      planet.getTopLeft().y+100,
+      "Personal best ",
       {
-        fontFamily: "Arial",
-        fontSize: 30,
-        fill: "#000000"
+        fontFamily: "Arial Black",
+        fontSize: 40,
+        fill: "#bbb"
+      }
+    )
+
+    let highestScore2 = this.add.text(
+      -this.sys.canvas.width,
+      planet.getTopLeft().y+150,
+      localStorage.getItem("highscore") + "",
+      {
+        fontFamily: "Arial Black",
+        fontSize: 40,
+        fill: "#000"
       }
     )
 
     let climbedScore = this.add.text(
       -this.sys.canvas.width,
-      planet.getTopLeft().y+150,
-      data.climbed + "",
+      planet.getTopLeft().y+200,
+      "You climbed " + "",
       {
         fontFamily: "Arial Black",
-        fontSize: 80,
-        fill: "#b7b7b7"
+        fontSize: 40,
+        fill: "#bbb"
+      }
+    )
+
+    let climbedScore2 = this.add.text(
+      -this.sys.canvas.width,
+      planet.getTopLeft().y+250,
+       data.climbed + "",
+      {
+        fontFamily: "Arial Black",
+        fontSize: 40,
+        fill: "#000"
       }
     )
 
@@ -91,8 +122,16 @@ export class GameoverScene extends Phaser.Scene {
   });
 
   this.tweens.add({
-      targets: climbedText,
-      x: this.sys.canvas.width/2-climbedText.displayWidth/2,
+      targets: highestScore,
+      x: this.sys.canvas.width/2-highestScore.displayWidth/2,
+      ease: 'Elastic',
+      easeParams: [ 2.0, 3.2 ],
+      duration: 2000
+  });
+
+  this.tweens.add({
+      targets: highestScore2,
+      x: this.sys.canvas.width/2-highestScore2.displayWidth/2,
       ease: 'Elastic',
       easeParams: [ 2.0, 3.2 ],
       duration: 2000
@@ -105,6 +144,14 @@ export class GameoverScene extends Phaser.Scene {
     easeParams: [ 2.0, 3.2 ],
     duration: 2000
 });
+
+  this.tweens.add({
+    targets: climbedScore2,
+    x: this.sys.canvas.width/2-climbedScore2.displayWidth/2,
+    ease: 'Elastic',
+    easeParams: [ 2.0, 3.2 ],
+    duration: 2000
+  });
 
   }
 
