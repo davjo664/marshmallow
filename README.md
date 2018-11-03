@@ -1,5 +1,3 @@
-# marshmallow
-
 # Marshmallow - Phaser3 game using Typescript and webpack
 
 - Typescript support.

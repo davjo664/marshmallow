@@ -11,6 +11,7 @@ export class Player extends Phaser.GameObjects.Sprite {
   private isDead = false;
   private comboPoints = 0;
   private velocityMultiplier = 0;
+  private particles: any;
 
   constructor(params) {
     super(params.scene, params.x, params.y, params.key);
@@ -29,6 +30,8 @@ export class Player extends Phaser.GameObjects.Sprite {
 
     this.velocityMultiplier = params.scene.sys.canvas.width/1800;
     this.body.setMaxVelocity(900*this.velocityMultiplier,900*this.velocityMultiplier)
+
+    this.particles = this.currentScene.add.particles('flares');
 
     this.initShader();
   }
@@ -96,13 +99,37 @@ export class Player extends Phaser.GameObjects.Sprite {
       this.body.setVelocityX(1400*this.velocityMultiplier);
       let timeEvent = this.currentScene.time.addEvent({ delay: 200, callback: this.timer, callbackScope: this });
     }
-    else if (this.cursors.up.isDown /*&& this.body.touching.down*/)
+    else if (this.cursors.up.isDown && (this.body.touching.down || parseFloat(localStorage.getItem("fuel")) > 0))
     {
+      if ( parseFloat(localStorage.getItem("fuel")) > 0 && !this.body.touching.down) {
+        let newFuel = parseFloat(localStorage.getItem("fuel"))-1;
+        localStorage.setItem("fuel",newFuel.toString());
+        console.log(localStorage.getItem("fuel"));
+        if(!this.particles.emitters.length) {
+          this.particles.createEmitter({
+              frame: [ 'yellow', 'orange' ],
+              x: this.getCenter().x,
+              y: this.getCenter().y,
+              lifespan: 500,
+              speed: 100,
+              scale: { start: 0.7, end: 0 },
+              blendMode: 'ADD'
+          });
+        } else {
+          console.log(this.particles.emitters)
+          this.particles.emitters.first.setPosition(this.getCenter().x,this.getCenter().y);
+        }
+          
+      }
       console.log("jump straight")
       // console.log("y: " + this.y + "     highest: " + this.highestClimed);
       this.body.setVelocityY(-600*this.velocityMultiplier);
       this.comboPoints = 0;
-    } 
+    } else {
+      if(this.particles.emitters.length) {
+        this.particles.emitters.first.setPosition(-100,0);
+      }
+    }
   }
 
   private timer() {

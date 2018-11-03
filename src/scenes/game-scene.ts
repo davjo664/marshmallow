@@ -26,6 +26,7 @@ export class GameScene extends Phaser.Scene {
   private controls: Phaser.GameObjects.Image;
   private arrow: Phaser.GameObjects.Image;
   private slidejump: Phaser.GameObjects.Image;
+  private goodjob: Phaser.GameObjects.Image;
   
   private isGameOver: boolean = false;
 
@@ -57,6 +58,7 @@ export class GameScene extends Phaser.Scene {
     this.load.image("controls", "./src/assets/controls.png");
     this.load.image("arrow", "./src/assets/arrow.png");
     this.load.image("slidejump", "./src/assets/slidejump.png");
+    this.load.image("goodjob", "./src/assets/goodjob.png");
     this.load.spritesheet('dude', 
         './src/assets/dude.png',
         { frameWidth: 32, frameHeight: 48 }
@@ -143,7 +145,7 @@ export class GameScene extends Phaser.Scene {
       }
     ).setScrollFactor(0); //Fixed to camera
 
-    this.highestClimbed.setDepth(1);
+    this.highestClimbed.setDepth(5);
     
 
     this.currentClimbed = this.add.text(
@@ -184,7 +186,7 @@ export class GameScene extends Phaser.Scene {
       this.highscoreText.setAlpha(0);
     }
 
-    this.currentClimbed.setDepth(1);
+    this.currentClimbed.setDepth(5);
     this.currentClimbed.setInteractive();
 
     let pause = this.add.image(this.sys.canvas.width,0,'pause');
@@ -193,7 +195,7 @@ export class GameScene extends Phaser.Scene {
     pause.setY(pause.displayHeight/2+pause.displayHeight/10);
     pause.setScrollFactor(0); //Fixed to camera
     pause.setInteractive();
-    pause.setDepth(1);
+    pause.setDepth(5);
 
     let play = this.add.image(this.sys.canvas.width,0,'play');
     play.setScale((this.sys.canvas.width/10)/play.height,(this.sys.canvas.width/10)/play.height);
@@ -201,7 +203,7 @@ export class GameScene extends Phaser.Scene {
     play.setY(pause.y);
     play.setScrollFactor(0); //Fixed to camera
     play.setInteractive();
-    play.setDepth(1);
+    play.setDepth(5);
     play.setAlpha(0);
 
     let restart = this.add.image(0,0,'restart');
@@ -210,7 +212,7 @@ export class GameScene extends Phaser.Scene {
     restart.setY(pause.y+restart.displayHeight+restart.displayHeight/10);
     restart.setScrollFactor(0); //Fixed to camera
     restart.setInteractive();
-    restart.setDepth(1);
+    restart.setDepth(5);
     restart.setAlpha(0);
 
     if (this.isTutorial) {
@@ -229,6 +231,14 @@ export class GameScene extends Phaser.Scene {
       // restart.setInteractive();
       this.slidejump.setDepth(1);
       this.slidejump.setAlpha(0);
+
+      this.goodjob = this.add.image(0,0,'goodjob');
+      this.goodjob.setScale((this.sys.canvas.width/6)/this.goodjob.height,(this.sys.canvas.width/6)/this.goodjob.height);
+      this.goodjob.setX(this.sys.canvas.width/2);
+      this.goodjob.setY(this.sys.canvas.height/3);
+      // restart.setInteractive();
+      this.goodjob.setDepth(1);
+      this.goodjob.setAlpha(0);
 
       this.arrow = this.add.image(0,0,'arrow');
       this.arrow.setScale((this.sys.canvas.width/10)/this.arrow.width,(this.sys.canvas.width/10)/this.arrow.width);
@@ -369,6 +379,12 @@ export class GameScene extends Phaser.Scene {
         duration: 1000,
         ease: 'Sine.easeInOut',
       });
+      this.tweens.add({
+        targets: this.goodjob,
+        alpha: 1,
+        duration: 1000,
+        ease: 'Sine.easeInOut',
+      });
       this.blockGenerator.startLoop();
       this.isTutorial = false;
     }
@@ -378,7 +394,7 @@ export class GameScene extends Phaser.Scene {
     this.currentClimbed.setText(this.player.getClimbed());
     this.highestClimbed.setText(this.player.getHighestClimed());
       
-    if(!this.isTutorial && !this.highscore && parseFloat(this.player.getClimbed())*10-this.floor.body.y > -this.highscoreText.y) {
+    if(this.highscoreText.alpha != 0 && !this.highscore && parseFloat(this.player.getClimbed())*10-this.floor.body.y > -this.highscoreText.y) {
         this.tweens.add({
           targets: this.highscoreText,
           alpha: 0.2,
@@ -401,12 +417,13 @@ export class GameScene extends Phaser.Scene {
 
   gameOver(lava: boolean): void {
     if (this.isTutorial) {
-      this.scene.manager.getScene('game-scene').scene.restart();
+      this.scene.restart();
       return;
     }
     if (!this.isGameOver) {
       this.isGameOver = true;
       console.log("gameOver");
+      this.blockGenerator.stopLoop();
 
       if(!lava) {
         this.tweens.add({
@@ -416,14 +433,14 @@ export class GameScene extends Phaser.Scene {
         });
           var particles = this.add.particles('flares');
           particles.createEmitter({
-            frame: [ 'red', 'yellow', 'blue', 'green' ],
-            x: this.player.body.x,
-            y: this.player.body.y,
-            lifespan: 2000,
-            speed: 200,
-            scale: { start: 0.7, end: 0 },
-            blendMode: 'ADD'
-        });
+              frame: [ 'red', 'yellow', 'blue', 'green' ],
+              x: this.player.body.x,
+              y: this.player.body.y,
+              lifespan: 2000,
+              speed: 200,
+              scale: { start: 0.7, end: 0 },
+              blendMode: 'ADD'
+          });
       } else {
         this.player.body.setImmovable(true);
         this.player.body.stop();
@@ -433,7 +450,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   updateCamera(): void {
-    if (this.player.getBottomLeft().y-this.sys.canvas.height/2 < 0) {
+    if (!this.isGameOver && this.player.getBottomLeft().y-this.sys.canvas.height/2 < 0) {
       this.cameras.main.scrollY = this.player.getBottomLeft().y-this.sys.canvas.height/2;
     }
   }

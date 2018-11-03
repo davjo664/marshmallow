@@ -15,6 +15,8 @@ export class GameoverScene extends Phaser.Scene {
     this.load.image("coin", "./src/assets/coin.png");
     this.load.image("floor", "./src/assets/floor.png");
     this.load.image("normalmap", "./src/assets/normalmap.png");
+    this.load.image("bar", "./src/assets/bar.png");
+    this.load.image("pointer", "./src/assets/pointer.png");
     this.load.spritesheet('dude', 
         './src/assets/dude.png',
         { frameWidth: 32, frameHeight: 48 }
@@ -30,10 +32,21 @@ export class GameoverScene extends Phaser.Scene {
     // Store
     console.log(data.climbed)
     console.log(localStorage.getItem("highscore"));
-    if (!localStorage.getItem("highscore") || data.climbed > parseFloat(localStorage.getItem("highscore"))) {
+    console.log("HIGHSCORE");
+    console.log(localStorage.getItem("totalClimbed"));
+    if (!localStorage.getItem("highscore")) {
+      localStorage.setItem("highscore", "0");
+      localStorage.setItem("totalClimbed", "0");
+    }
+    if (data.climbed > parseFloat(localStorage.getItem("highscore"))) {
       console.log("YES");
       localStorage.setItem("highscore", data.climbed);
     }
+    console.log("VRF");
+    console.log(parseFloat(localStorage.getItem("totalClimbed"))+parseFloat(data.climbed));
+    let prevTotalClimbed = parseFloat(localStorage.getItem("totalClimbed"));
+    let newTotal = parseFloat(localStorage.getItem("totalClimbed"))+parseFloat(data.climbed);
+    localStorage.setItem("totalClimbed", newTotal.toString());
 
     this.input.once('pointerdown', () => {
       console.log("START");
@@ -45,65 +58,68 @@ export class GameoverScene extends Phaser.Scene {
 
   }, this);
   
+    let floorImage = new Phaser.GameObjects.Image(this,0,0,'square');
+    let scaleX = this.sys.canvas.width/2/floorImage.width;
+    let scaleY = this.sys.canvas.height/2/floorImage.height;
 
-    var planet = this.add.image(-1000, this.sys.canvas.height/2, 'square').setScale(0.6,0.4);
+    var planet = this.add.image(-1000, this.sys.canvas.height/2, 'square').setScale(scaleX,scaleY);
 
-    let gameOverText = this.add.text(
-      -this.sys.canvas.width,
-      planet.getTopLeft().y-80,
-      "HIGHSCORES" + "",
+
+    floorImage = new Phaser.GameObjects.Image(this,0,0,'bar');
+    scaleX = this.sys.canvas.width/3/floorImage.width;
+
+    var planet3 = this.add.image(0, planet.getCenter().y, 'bar').setScale(scaleX,scaleX);
+    planet3.setX(-planet3.displayWidth/2);
+
+    floorImage = new Phaser.GameObjects.Image(this,0,0,'pointer');
+    scaleX = this.sys.canvas.width/30/floorImage.width;
+
+    var planet4 = this.add.image(0, 0, 'pointer').setScale(scaleX,scaleX);
+    // planet4.setX(-planet.getBottomLeft().x);
+    planet4.setY(planet3.getBottomLeft().y);
+
+    let climbedScore2 = this.add.text(
+      0,
+      0,
+       "You climbed: " + data.climbed + "",
       {
-        fontFamily: "Arial",
-        fontSize: 50,
-        stroke: "#fff",
-        strokeThickness: 6,
-        fill: "#000000"
+        fontFamily: "Arial Black",
+        fontSize: this.sys.canvas.width/30,
+        fill: "#000"
       }
     )
+    climbedScore2.setY(planet.getTopLeft().y+climbedScore2.displayHeight);
+    
+    let count = 0;
+    this.time.addEvent({ delay: 10, callback: () => {
+        climbedScore2.setText("You climbed: " + count.toString());
+        count++;
+    }, callbackScope: this, repeat: data.climbed ? data.climbed : 0 });
 
     let highestScore = this.add.text(
       -this.sys.canvas.width,
-      planet.getTopLeft().y+100,
+      0,
       "Personal best ",
       {
         fontFamily: "Arial Black",
-        fontSize: 40,
+        fontSize: this.sys.canvas.width/60,
         fill: "#bbb"
       }
     )
+    highestScore.setY(planet3.getBottomLeft().y+planet.displayHeight/8);
 
     let highestScore2 = this.add.text(
       -this.sys.canvas.width,
-      planet.getTopLeft().y+150,
+      0,
       localStorage.getItem("highscore") + "",
       {
         fontFamily: "Arial Black",
-        fontSize: 40,
+        fontSize: this.sys.canvas.width/50,
         fill: "#000"
       }
     )
 
-    let climbedScore = this.add.text(
-      -this.sys.canvas.width,
-      planet.getTopLeft().y+200,
-      "You climbed " + "",
-      {
-        fontFamily: "Arial Black",
-        fontSize: 40,
-        fill: "#bbb"
-      }
-    )
-
-    let climbedScore2 = this.add.text(
-      -this.sys.canvas.width,
-      planet.getTopLeft().y+250,
-       data.climbed + "",
-      {
-        fontFamily: "Arial Black",
-        fontSize: 40,
-        fill: "#000"
-      }
-    )
+    highestScore2.setY(planet3.getBottomLeft().y+planet.displayHeight/8+highestScore2.displayHeight);
 
   this.tweens.add({
     targets: planet,
@@ -114,12 +130,43 @@ export class GameoverScene extends Phaser.Scene {
   });
 
   this.tweens.add({
-      targets: gameOverText,
-      x: this.sys.canvas.width/2-gameOverText.displayWidth/2,
-      ease: 'Elastic',
-      easeParams: [ 2.0, 3.2 ],
-      duration: 2000
+    targets: planet3,
+    x: this.sys.canvas.width/2,
+    ease: 'Elastic',
+    easeParams: [ 2.0, 3.2 ],
+    duration: 2000
   });
+
+  console.log(prevTotalClimbed);
+  console.log(parseFloat(localStorage.getItem("totalClimbed")))
+
+  let barStartPostX = this.sys.canvas.width/2-planet3.displayWidth/2+planet4.displayWidth/2;
+  let pointerStartPosX = barStartPostX + planet3.displayWidth/1000 * prevTotalClimbed -planet4.displayWidth;
+  let pointerEndPosX = barStartPostX + planet3.displayWidth/1000 * parseFloat(localStorage.getItem("totalClimbed")) - planet4.displayWidth;
+
+  if (parseFloat(localStorage.getItem("totalClimbed")) > 999) {
+  //   console.log("yesh");
+    pointerEndPosX = barStartPostX+planet3.displayWidth-planet4.displayWidth;
+    localStorage.setItem("totalClimbed", "0");
+    
+  }
+  localStorage.setItem("fuel", "100");
+
+  this.tweens.add({
+    targets: planet4,
+    x: pointerStartPosX,
+    ease: 'Elastic',
+    easeParams: [ 2.0, 3.2 ],
+    duration: 2000
+  });
+
+  setTimeout(()=> {
+    this.tweens.add({
+      targets: planet4,
+      x: pointerEndPosX,
+      duration: 1000
+    });
+  },2000)
 
   this.tweens.add({
       targets: highestScore,
@@ -136,14 +183,6 @@ export class GameoverScene extends Phaser.Scene {
       easeParams: [ 2.0, 3.2 ],
       duration: 2000
   });
-
-  this.tweens.add({
-    targets: climbedScore,
-    x: this.sys.canvas.width/2-climbedScore.displayWidth/2,
-    ease: 'Elastic',
-    easeParams: [ 2.0, 3.2 ],
-    duration: 2000
-});
 
   this.tweens.add({
     targets: climbedScore2,
