@@ -39,7 +39,9 @@ export class BlockGenerator {
                 lowestBlock = block;
             }
         });
-        if (lowestBlock && lowestBlock.y > (y+this.currentScene.sys.canvas.height*2)) {
+        // Remove lowest block if it is more then 2*the screen size below the highest block
+        // and if it is below the camera position.
+        if (lowestBlock && lowestBlock.y > (y+this.currentScene.sys.canvas.height*2) && lowestBlock.y > -this.currentScene.cameras.main.scrollY) {
             lowestBlock.destroy();
         }
         this.highestBlockY = y;

@@ -17,10 +17,12 @@ export class GameoverScene extends Phaser.Scene {
     this.load.image("normalmap", "./src/assets/normalmap.png");
     this.load.image("bar", "./src/assets/bar.png");
     this.load.image("pointer", "./src/assets/pointer.png");
+    this.load.image("superjump", "./src/assets/superjump.png");
     this.load.spritesheet('dude', 
         './src/assets/dude.png',
         { frameWidth: 32, frameHeight: 48 }
     );
+    this.load.atlas('flares', './src/assets/flares.png', './src/assets/flares.json');
   }
 
   init(): void {
@@ -50,8 +52,93 @@ export class GameoverScene extends Phaser.Scene {
 
     this.input.once('pointerdown', () => {
       console.log("START");
-      this.scene.stop('GameoverScene');
-      this.scene.manager.getScene('GameScene').scene.restart();
+      if (localStorage.getItem("fuel") === "100" && planet.alpha == 1) {
+        this.tweens.add({
+          targets: planet,
+          alpha: 0,
+          duration: 1000,
+          ease: 'Sine.easeInOut',
+        });
+        this.tweens.add({
+          targets: planet3,
+          alpha: 0,
+          duration: 1000,
+          ease: 'Sine.easeInOut',
+        });
+        this.tweens.add({
+          targets: planet4,
+          alpha: 0,
+          duration: 1000,
+          ease: 'Sine.easeInOut',
+        });
+        this.tweens.add({
+          targets: highestScore,
+          alpha: 0,
+          duration: 1000,
+          ease: 'Sine.easeInOut',
+        });
+        this.tweens.add({
+          targets: highestScore2,
+          alpha: 0,
+          duration: 1000,
+          ease: 'Sine.easeInOut',
+        });
+        this.tweens.add({
+          targets: climbedScore2,
+          alpha: 0,
+          duration: 1000,
+          ease: 'Sine.easeInOut',
+        });
+        this.tweens.add({
+          targets: superjump,
+          alpha: 1,
+          duration: 1000,
+          ease: 'Sine.easeInOut',
+        });
+        this.tweens.add({
+          targets: superjump,
+          scaleX: 2,
+          scaleY:2,
+          duration: 1000,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut',
+        });
+        
+        var particles = this.add.particles('flares');
+        var emitter1 = particles.createEmitter({
+          frame: 'yellow',
+          x: this.sys.canvas.width/2, y: this.sys.canvas.height/2,
+          speed: 200,
+          blendMode: 'ADD',
+          lifespan: 1000
+      });
+    
+      var emitter2 = particles.createEmitter({
+          frame: 'yellow',
+          x: this.sys.canvas.width/2, y: this.sys.canvas.height/2,
+          speed: 200,
+          scale: 0.5,
+          blendMode: 'ADD',
+          lifespan: 2000
+      });
+    
+      var emitter3 = particles.createEmitter({
+          frame: 'yellow',
+          x: this.sys.canvas.width/2, y: this.sys.canvas.height/2,
+          speed: 200,
+          scale: { min: 0, max: 1 },
+          blendMode: 'ADD',
+          lifespan: 2500
+      });
+      this.input.once('pointerdown', () => {
+        this.scene.stop('GameoverScene');
+        this.scene.manager.getScene('GameScene').scene.restart();
+      });
+      } else {
+        this.scene.stop('GameoverScene');
+        this.scene.manager.getScene('GameScene').scene.restart();
+      }
       
       // this.scene.start('GameScene');
       // this.scene.launch('GameScene');
@@ -63,6 +150,15 @@ export class GameoverScene extends Phaser.Scene {
     let scaleY = this.sys.canvas.height/2/floorImage.height;
 
     var planet = this.add.image(-1000, this.sys.canvas.height/2, 'square').setScale(scaleX,scaleY);
+
+    floorImage = new Phaser.GameObjects.Image(this,0,0,'superjump');
+    scaleX = this.sys.canvas.width/4/floorImage.width;
+    scaleY = this.sys.canvas.height/4/floorImage.height;
+
+    var superjump = this.add.image(this.sys.canvas.width/2, this.sys.canvas.height/2, 'superjump').setScale(scaleX,scaleX);
+    superjump.setAlpha(0);
+
+    superjump.setDepth(1);
 
 
     floorImage = new Phaser.GameObjects.Image(this,0,0,'bar');
@@ -91,7 +187,7 @@ export class GameoverScene extends Phaser.Scene {
     climbedScore2.setY(planet.getTopLeft().y+climbedScore2.displayHeight);
     
     let count = 0;
-    this.time.addEvent({ delay: 10, callback: () => {
+    this.time.addEvent({ delay: 500/data.climbed, callback: () => {
         climbedScore2.setText("You climbed: " + count.toString());
         count++;
     }, callbackScope: this, repeat: data.climbed ? data.climbed : 0 });
@@ -144,13 +240,15 @@ export class GameoverScene extends Phaser.Scene {
   let pointerStartPosX = barStartPostX + planet3.displayWidth/1000 * prevTotalClimbed -planet4.displayWidth;
   let pointerEndPosX = barStartPostX + planet3.displayWidth/1000 * parseFloat(localStorage.getItem("totalClimbed")) - planet4.displayWidth;
 
-  if (parseFloat(localStorage.getItem("totalClimbed")) > 999) {
+  if (parseFloat(localStorage.getItem("totalClimbed")) > 200) {
   //   console.log("yesh");
     pointerEndPosX = barStartPostX+planet3.displayWidth-planet4.displayWidth;
     localStorage.setItem("totalClimbed", "0");
-    
+    if (localStorage.getItem("fuel") == undefined) {
+      localStorage.setItem("superJumpTutorial", "1");
+    }
+    localStorage.setItem("fuel", "100");
   }
-  localStorage.setItem("fuel", "100");
 
   this.tweens.add({
     targets: planet4,

@@ -27,6 +27,8 @@ export class GameScene extends Phaser.Scene {
   private arrow: Phaser.GameObjects.Image;
   private slidejump: Phaser.GameObjects.Image;
   private goodjob: Phaser.GameObjects.Image;
+  private isSuperJumpTutorial: boolean = false;
+  private presshold: Phaser.GameObjects.Image;
   
   private isGameOver: boolean = false;
 
@@ -59,6 +61,7 @@ export class GameScene extends Phaser.Scene {
     this.load.image("arrow", "./src/assets/arrow.png");
     this.load.image("slidejump", "./src/assets/slidejump.png");
     this.load.image("goodjob", "./src/assets/goodjob.png");
+    this.load.image("presshold", "./src/assets/presshold.png");
     this.load.spritesheet('dude', 
         './src/assets/dude.png',
         { frameWidth: 32, frameHeight: 48 }
@@ -84,6 +87,7 @@ export class GameScene extends Phaser.Scene {
     this.down = false;
 
     this.isTutorial = localStorage.getItem("highscore") ? false : true;
+    this.isSuperJumpTutorial = localStorage.getItem("superJumpTutorial") === "1" ? true : false;
 
 
     //  Create a few images to check the perspective with
@@ -215,6 +219,16 @@ export class GameScene extends Phaser.Scene {
     restart.setDepth(5);
     restart.setAlpha(0);
 
+    if (this.isSuperJumpTutorial) {
+      this.presshold = this.add.image(0,0,'presshold');
+      this.presshold.setScale((this.sys.canvas.width/8)/this.presshold.height,(this.sys.canvas.width/8)/this.presshold.height);
+      this.presshold.setX(this.sys.canvas.width/2);
+      this.presshold.setY(this.sys.canvas.height/3);
+      // restart.setInteractive();
+      this.presshold.setDepth(1);
+      // restart.setAlpha(0);
+    }
+
     if (this.isTutorial) {
       this.controls = this.add.image(0,0,'controls');
       this.controls.setScale((this.sys.canvas.width/6)/this.controls.height,(this.sys.canvas.width/6)/this.controls.height);
@@ -248,11 +262,11 @@ export class GameScene extends Phaser.Scene {
 
       this.tweens.add({
           targets: this.arrow,
-          alpha: 0.2,
+          x: this.sys.canvas.width-this.arrow.displayWidth/1.5,
           duration: 500,
           ease: 'Sine.easeInOut',
           yoyo: true,
-          repeat: 4
+          repeat: -1
       });
     }
 
@@ -387,6 +401,27 @@ export class GameScene extends Phaser.Scene {
       });
       this.blockGenerator.startLoop();
       this.isTutorial = false;
+
+      setTimeout(()=>{
+        this.tweens.add({
+          targets: this.goodjob,
+          alpha: 0,
+          duration: 1000,
+          ease: 'Sine.easeInOut',
+        });
+      },2000)
+    }
+
+    if (this.isSuperJumpTutorial && parseFloat(localStorage.getItem("fuel")) < 90) {
+      console.log("HURRAY3");
+      this.tweens.add({
+        targets: this.presshold,
+        alpha: 0,
+        duration: 1000,
+        ease: 'Sine.easeInOut',
+      });
+      this.isSuperJumpTutorial = false;
+      localStorage.setItem("superJumpTutorial", "0");
     }
   }
 
@@ -431,7 +466,7 @@ export class GameScene extends Phaser.Scene {
           scaleY: 0,
           duration: 50
         });
-          var particles = this.add.particles('flares');
+          var particles:any = this.add.particles('flares');
           particles.createEmitter({
               frame: [ 'red', 'yellow', 'blue', 'green' ],
               x: this.player.body.x,
@@ -441,6 +476,10 @@ export class GameScene extends Phaser.Scene {
               scale: { start: 0.7, end: 0 },
               blendMode: 'ADD'
           });
+          setTimeout(()=> {
+            particles.emitters.first.setPosition(-this.sys.canvas.width,0);
+          },1000)
+          
       } else {
         this.player.body.setImmovable(true);
         this.player.body.stop();

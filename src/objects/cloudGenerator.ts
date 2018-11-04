@@ -11,7 +11,8 @@ export class CloudGenerator {
     }
 
     createCloud(): void {
-        let rnd = Phaser.Math.RND.integerInRange(this.currentScene.cameras.main.scrollY,this.currentScene.cameras.main.scrollY+this.currentScene.sys.canvas.height);
+        let lowestY = (-this.currentScene.cameras.main.scrollY > this.currentScene.sys.canvas.height/2) ? this.currentScene.cameras.main.scrollY : -this.currentScene.sys.canvas.height/2;
+        let rnd = Phaser.Math.RND.integerInRange(lowestY,lowestY+this.currentScene.sys.canvas.height);
         let rndScale = Phaser.Math.RND.integerInRange(3,6)/10;
         let rndDuration = Phaser.Math.RND.integerInRange(8000,12000);
         let cloud = this.currentScene.add.image(-200,rnd,this.textureKey).setScale(rndScale,rndScale);
@@ -21,7 +22,6 @@ export class CloudGenerator {
             x: this.currentScene.sys.canvas.width+200,
             ease: 'easeInOut',
             onComplete: () => {
-              console.log("Complete");
               cloud.destroy();
             },
             duration: rndDuration

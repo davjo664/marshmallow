@@ -9,9 +9,11 @@ export class Player extends Phaser.GameObjects.Sprite {
   private animationTime: number = 0;
   private renderPipeline: any;
   private isDead = false;
-  private comboPoints = 0;
   private velocityMultiplier = 0;
   private particles: any;
+  private fuelText: Phaser.GameObjects.Text;
+  private fuelTextTween: Phaser.Tweens.Tween;
+  private onGroundTime: Boolean = false;
 
   constructor(params) {
     super(params.scene, params.x, params.y, params.key);
@@ -32,6 +34,18 @@ export class Player extends Phaser.GameObjects.Sprite {
     this.body.setMaxVelocity(900*this.velocityMultiplier,900*this.velocityMultiplier)
 
     this.particles = this.currentScene.add.particles('flares');
+
+    this.fuelText = this.currentScene.add.text(
+      0,
+      0,
+      "",
+      {
+        fontFamily: "Arial Black",
+        fontSize: this.currentScene.sys.canvas.width/60,
+        fill: "#fff"
+      }
+    )
+    
 
     this.initShader();
   }
@@ -56,6 +70,7 @@ export class Player extends Phaser.GameObjects.Sprite {
   }
 
   private handleInput(): void {
+    
     if (this.cursors.right.isDown) {
       if(this.increasedVelocityLeft) {
         this.body.setMaxVelocity(900*this.velocityMultiplier, 900*this.velocityMultiplier);
@@ -77,12 +92,6 @@ export class Player extends Phaser.GameObjects.Sprite {
 
     if (this.cursors.up.isDown && this.body.touching.right)
     {
-      if (!this.body.touching.down) {
-        this.comboPoints++;
-        console.log("COMBO POINT " + this.comboPoints);
-      } else {
-        this.comboPoints = 0;
-      }
       console.log("jump left up")
       this.body.setMaxVelocity(5000*this.velocityMultiplier,5000*this.velocityMultiplier);
       this.increasedVelocityRight = true;
@@ -101,9 +110,20 @@ export class Player extends Phaser.GameObjects.Sprite {
     }
     else if (this.cursors.up.isDown && (this.body.touching.down || parseFloat(localStorage.getItem("fuel")) > 0))
     {
-      if ( parseFloat(localStorage.getItem("fuel")) > 0 && !this.body.touching.down) {
+      if(!this.onGroundTime && this.body.touching.down) {
+        console.log("kkk")
+        this.onGroundTime = true;
+      }
+      setTimeout(()=>{
+        this.onGroundTime = false;
+      },200)
+      console.log(this.onGroundTime);
+      if ( parseFloat(localStorage.getItem("fuel")) > 0 && !this.onGroundTime && !this.increasedVelocityLeft && !this.increasedVelocityRight) {
         let newFuel = parseFloat(localStorage.getItem("fuel"))-1;
         localStorage.setItem("fuel",newFuel.toString());
+        this.fuelText.setText(newFuel+"");
+        this.fuelText.setX(this.getCenter().x-this.fuelText.displayWidth/2);
+        this.fuelText.setY(this.getCenter().y-this.fuelText.displayHeight/2);
         console.log(localStorage.getItem("fuel"));
         if(!this.particles.emitters.length) {
           this.particles.createEmitter({
@@ -116,18 +136,30 @@ export class Player extends Phaser.GameObjects.Sprite {
               blendMode: 'ADD'
           });
         } else {
-          console.log(this.particles.emitters)
           this.particles.emitters.first.setPosition(this.getCenter().x,this.getCenter().y);
         }
           
       }
-      console.log("jump straight")
       // console.log("y: " + this.y + "     highest: " + this.highestClimed);
       this.body.setVelocityY(-600*this.velocityMultiplier);
-      this.comboPoints = 0;
     } else {
       if(this.particles.emitters.length) {
         this.particles.emitters.first.setPosition(-100,0);
+        this.fuelTextTween = this.currentScene.tweens.add({
+          targets: this.fuelText,
+          alpha: 0,
+          duration: 2000,
+        })
+        this.fuelText = this.currentScene.add.text(
+          0,
+          0,
+          "",
+          {
+            fontFamily: "Arial Black",
+            fontSize: this.currentScene.sys.canvas.width/60,
+            fill: "#fff"
+          }
+        )
       }
     }
   }
