@@ -273,10 +273,6 @@ export class GameScene extends Phaser.Scene {
       });
     }
 
-    this.currentClimbed.on('pointerdown', () => { 
-      this.gameOver(false);
-    });
-
     pause.on('pointerdown', () => { 
       console.log(this.isGameOver);
       this.physics.world.pause();
@@ -315,21 +311,21 @@ export class GameScene extends Phaser.Scene {
       }
     });
     this.physics.add.collider(blocks, this.player, (player,block) => {
-      if (player.body.touching.none) {
+      if (!this.isGameOver && player.body.touching.none) {
         this.gameOver(false);
       }
       
       if (player.body.touching.up) {
         this.up = true;
         this.time.addEvent({ delay: 30, callback: this.timerUp, callbackScope: this });
-        if(this.down) {
+        if(!this.isGameOver && this.down) {
           this.gameOver(false);
         }
       }
       if (player.body.touching.down) {
         this.down = true;
         this.time.addEvent({ delay: 30, callback: this.timerDown, callbackScope: this });
-        if(this.up) {
+        if(!this.isGameOver && this.up) {
           this.gameOver(false);
         }
       }
@@ -338,18 +334,20 @@ export class GameScene extends Phaser.Scene {
       }
     });
     this.physics.add.collider(this.player, this.floor, (player,block) => {
-      if (player.body.touching.none) {
+      if (!this.isGameOver && player.body.touching.none) {
         this.gameOver(false);
       }
       this.down = true;
       this.time.addEvent({ delay: 30, callback: this.timerDown, callbackScope: this });
-      if (this.up) {
+      if (!this.isGameOver && this.up) {
         this.gameOver(false);
       }
     });
 
     this.physics.add.collider(this.player, this.lava, (player,lava) => {
+      if (!this.isGameOver) {
         this.gameOver(true);
+      }
     });
   }
 
@@ -452,10 +450,18 @@ export class GameScene extends Phaser.Scene {
         repeat: -1
     });
       this.highscore = true;
+      this.sound.play('record');
     }
   }
 
   gameOver(lava: boolean): void {
+    console.log("gameover");
+    if (lava) {
+      this.sound.play('drowned');
+    } else {
+      this.sound.play('squeezed');
+    }
+
     if (this.isTutorial) {
       this.scene.restart();
       return;

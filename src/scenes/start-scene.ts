@@ -14,6 +14,11 @@ export class StartScene extends Phaser.Scene {
     this.load.audio('travels', ['./src/assets/travels.mp3']);
     this.load.audio('boogie', ['./src/assets/boogie.mp3']);
     this.load.audio('travels2', ['./src/assets/travels2.mp3']);
+    this.load.audio('hop1', ['./src/assets/hop1.mp3']);
+    this.load.audio('hop2', ['./src/assets/hop2.mp3']);
+    this.load.audio('record', ['./src/assets/record.mp3']);
+    this.load.audio('squeezed', ['./src/assets/squeezed.mp3']);
+    this.load.audio('drowned', ['./src/assets/drowned.mp3']);
   }
 
   init(): void {
@@ -23,29 +28,25 @@ export class StartScene extends Phaser.Scene {
   create(): void {
 
       this.input.once('pointerdown', () => {
-        console.log("START");
         this.scene.stop('StartScene');
         this.scene.manager.getScene('GameScene').scene.restart();
-        
-        // this.scene.start('GameScene');
-        // this.scene.launch('GameScene');
-
     }, this);
 
     this.sound.add('travels');
     this.sound.add('boogie');
     this.sound.add('travels2');
-
-    var gameoverSong = this.sound.add('travels');
-    gameoverSong.addMarker({ name: 'travels2', start: 20, duration: 18.8, config: {} });
+    this.sound.add('hop1');
+    this.sound.add('hop2');
+    this.sound.add('record');
+    this.sound.add('squeezed');
+    this.sound.add('drowned');
     this.sound.play('travels');
   
-
-    var planet = this.add.image(-1000, this.sys.canvas.height/2.5, 'title').setScale(0.4);
+    var title = this.add.image(-1000, this.sys.canvas.height/2.5, 'title').setScale(0.4);
 
     let gameOverText = this.add.text(
       -1000,
-      planet.getTopLeft().y+200,
+      title.getTopLeft().y+200,
       "TOUCH TO PLAY",
       {
         fontFamily: "Arial",
@@ -57,8 +58,8 @@ export class StartScene extends Phaser.Scene {
     )
 
     setTimeout(()=> {
-      var planet = this.add.particles('flares');
-      planet.createEmitter({
+      var flares = this.add.particles('flares');
+      flares.createEmitter({
         frame: [ 'white', 'red', 'yellow', 'blue', 'green' ],
         x: this.sys.canvas.width/2,
         y: this.sys.canvas.height/2.5,
@@ -72,7 +73,7 @@ export class StartScene extends Phaser.Scene {
 
     setTimeout(()=> {
       this.tweens.add({
-        targets: planet,
+        targets: title,
         scaleX: 0.5,
         scaleY: 0.5,
         duration: 2000,
@@ -84,7 +85,7 @@ export class StartScene extends Phaser.Scene {
     },2000)
 
   this.tweens.add({
-      targets: planet,
+      targets: title,
       x: this.sys.canvas.width/2,
       ease: 'Elastic',
       easeParams: [ 2.0, 3.2 ],
@@ -111,11 +112,7 @@ export class StartScene extends Phaser.Scene {
       easeParams: [ 2.0, 3.2 ],
       duration: 3000,
   });
-
-  
-
   }
-
 
   update(): void {
 

@@ -29,9 +29,10 @@ export class GameoverScene extends Phaser.Scene {
   }
 
   create(data): void {
-
-    this.sound.pauseAll();
-    this.sound.play('travels2');
+    setTimeout(()=> {
+      this.sound.pauseAll();
+      this.sound.play('travels2');
+    },1000)
 
     // Store
     console.log(data.climbed)
@@ -242,7 +243,7 @@ export class GameoverScene extends Phaser.Scene {
   let pointerStartPosX = barStartPostX + (planet3.displayWidth-planet4.displayWidth)/1000 * prevTotalClimbed;
   let pointerEndPosX = barStartPostX + (planet3.displayWidth-planet4.displayWidth)/1000 * parseFloat(localStorage.getItem("totalClimbed")) ;
 
-  if (parseFloat(localStorage.getItem("totalClimbed")) > 800) {
+  if (parseFloat(localStorage.getItem("totalClimbed")) > 500) {
   //   console.log("yesh");
     pointerEndPosX = barStartPostX+planet3.displayWidth-planet4.displayWidth;
     localStorage.setItem("totalClimbed", "0");

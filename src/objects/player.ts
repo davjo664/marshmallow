@@ -1,5 +1,7 @@
+import { GameScene } from "../scenes/game-scene";
+
 export class Player extends Phaser.GameObjects.Sprite {
-  private currentScene: Phaser.Scene;
+  private currentScene: GameScene;
   private cursors: CursorKeys;
   private increasedVelocityRight: Boolean = false;
   private increasedVelocityLeft: Boolean = false;
@@ -92,6 +94,7 @@ export class Player extends Phaser.GameObjects.Sprite {
 
     if (this.cursors.up.isDown && this.body.touching.right)
     {
+      this.currentScene.sound.play('hop2');
       console.log("jump left up")
       this.body.setMaxVelocity(5000*this.velocityMultiplier,5000*this.velocityMultiplier);
       this.increasedVelocityRight = true;
@@ -101,6 +104,7 @@ export class Player extends Phaser.GameObjects.Sprite {
       
     } else if (this.cursors.up.isDown && this.body.touching.left)
     {
+      this.currentScene.sound.play('hop2');
       console.log("jump right up")
       this.body.setMaxVelocity(5000*this.velocityMultiplier,5000*this.velocityMultiplier);
       this.increasedVelocityLeft = true;
@@ -108,8 +112,11 @@ export class Player extends Phaser.GameObjects.Sprite {
       this.body.setVelocityX(1400*this.velocityMultiplier);
       let timeEvent = this.currentScene.time.addEvent({ delay: 200, callback: this.timer, callbackScope: this });
     }
-    else if (this.cursors.up.isDown && (this.body.touching.down || parseFloat(localStorage.getItem("fuel")) > 0))
+    else if (!this.currentScene.getIsGameOver() && this.cursors.up.isDown && (this.body.touching.down || parseFloat(localStorage.getItem("fuel")) > 0))
     {
+      if (!parseFloat(localStorage.getItem("fuel"))) {
+        this.currentScene.sound.play('hop1');
+      }
       if(!this.onGroundTime && this.body.touching.down) {
         console.log("kkk")
         this.onGroundTime = true;
