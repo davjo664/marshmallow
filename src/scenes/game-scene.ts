@@ -6,16 +6,10 @@ import { BlockGenerator } from "../objects/blockGenerator"
 
 export class GameScene extends Phaser.Scene {
   private player: Player;
-  private camera: Phaser.Cameras.Sprite3D.Camera;
   private currentClimbed: Phaser.GameObjects.Text;
   private highestClimbed: Phaser.GameObjects.Text;
-  private cursors: CursorKeys;
-  private customPipeline2: any;
-  private time2: number = 0.0;
-  private timeEvent;
   private floor;
   private lava: Lava;
-  private cloudGenerator: CloudGenerator;
   private blockGenerator: BlockGenerator;
   private down = false;
   private up = false;
@@ -29,7 +23,6 @@ export class GameScene extends Phaser.Scene {
   private goodjob: Phaser.GameObjects.Image;
   private isSuperJumpTutorial: boolean = false;
   private presshold: Phaser.GameObjects.Image;
-  
   private isGameOver: boolean = false;
 
   constructor() {
@@ -45,13 +38,12 @@ export class GameScene extends Phaser.Scene {
   }
 
   preload(): void {
-
-    this.load.image("background","./src/assets/background.png");
     this.load.image("player", "./src/assets/player2.png");
     this.load.image("block", "./src/assets/block.png");
     this.load.image("floor", "./src/assets/floor.png");
-    this.load.image("normalmap", "./src/assets/normalmap.png");
     this.load.image("pause", "./src/assets/pause.png");
+    this.load.image("mute", "./src/assets/sound-on.png");
+    this.load.image("unmute", "./src/assets/sound-off.png");
     this.load.image("play", "./src/assets/play.png");
     this.load.image("restart", "./src/assets/restart.png");
     this.load.image("lava", "./src/assets/lava.png");
@@ -61,11 +53,6 @@ export class GameScene extends Phaser.Scene {
     this.load.image("slidejump", "./src/assets/slidejump.png");
     this.load.image("goodjob", "./src/assets/goodjob.png");
     this.load.image("presshold", "./src/assets/presshold.png");
-    this.load.spritesheet('dude', 
-        './src/assets/dude.png',
-        { frameWidth: 32, frameHeight: 48 }
-    );
-
     this.load.atlas('flares', './src/assets/flares.png', './src/assets/flares.json');
   }
 
@@ -74,12 +61,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
-
-    // this.initShader();
-
-    //  Camera at 0x0x200 and looking at 0x0x0
-    this.camera = this.cameras3d.add(85).setPosition(0, 0, 200);
-    this.cursors = this.input.keyboard.createCursorKeys();
+    this.cameras3d.add(85).setPosition(0, 0, 200);
+    this.input.keyboard.createCursorKeys();
 
     this.isGameOver = false;
     this.up = false;
@@ -91,10 +74,6 @@ export class GameScene extends Phaser.Scene {
     this.sound.pauseAll();
     this.sound.play('boogie');
 
-
-    //  Create a few images to check the perspective with
-    // this.camera.create(-150, 0, -100, 'coin', null);
-
     let floorImage = new Phaser.GameObjects.Image(this,0,0,'floor');
     let scaleX = this.sys.canvas.width/floorImage.width;
     let scaleY = floorImage.height/floorImage.width;
@@ -102,7 +81,6 @@ export class GameScene extends Phaser.Scene {
     this.floor.setScale(scaleX,scaleY).refreshBody();
     this.floor.body.setSize(this.sys.canvas.width+100,scaleY*floorImage.height-110);
     this.floor.body.setOffset(-50,110);
-
 
     this.player = new Player({
       scene: this,
@@ -118,7 +96,7 @@ export class GameScene extends Phaser.Scene {
       floorY:this.floor.body.y
     });
 
-    this.cloudGenerator = new CloudGenerator({
+    new CloudGenerator({
       scene: this,
       frequency: 4000,
       key: "cloud"

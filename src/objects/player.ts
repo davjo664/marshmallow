@@ -14,7 +14,6 @@ export class Player extends Phaser.GameObjects.Sprite {
   private velocityMultiplier = 0;
   private particles: any;
   private fuelText: Phaser.GameObjects.Text;
-  private fuelTextTween: Phaser.Tweens.Tween;
   private onGroundTime: Boolean = false;
 
   constructor(params) {
@@ -118,7 +117,6 @@ export class Player extends Phaser.GameObjects.Sprite {
         this.currentScene.sound.play('hop1');
       }
       if(!this.onGroundTime && this.body.touching.down) {
-        console.log("kkk")
         this.onGroundTime = true;
       }
       setTimeout(()=>{
@@ -152,7 +150,7 @@ export class Player extends Phaser.GameObjects.Sprite {
     } else {
       if(this.particles.emitters.length) {
         this.particles.emitters.first.setPosition(-100,0);
-        this.fuelTextTween = this.currentScene.tweens.add({
+        this.currentScene.tweens.add({
           targets: this.fuelText,
           alpha: 0,
           duration: 2000,
@@ -191,10 +189,7 @@ export class Player extends Phaser.GameObjects.Sprite {
     } else {
       this.renderPipeline.setFloat1('time', 1);
     }
-    
-    // this.renderPipeline.setFloat1('time2', Math.abs(1+this.body.velocity.x/1000));
-    // console.log(Math.abs(1+this.body.velocity.x/1000));
-    // this.renderPipeline.setFloat1('time2', Math.abs(this.body.velocity.x/8000));
+
     if( this.body.velocity.x != 0) {
       this.renderPipeline.setFloat1('time2', 1.2);
     } else {
