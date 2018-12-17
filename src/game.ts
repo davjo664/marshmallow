@@ -6,7 +6,7 @@ import { GameoverScene } from "./scenes/gameover-scene";
 import { StartScene } from "./scenes/start-scene";
 
 const config: GameConfig = {
-  title: "Coin Runner",
+  title: "Marshmallow",
   version: "1.0.0",
   type: Phaser.AUTO,
   parent: "game",

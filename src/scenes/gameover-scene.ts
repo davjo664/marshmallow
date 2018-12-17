@@ -12,7 +12,6 @@ export class GameoverScene extends Phaser.Scene {
     this.load.image("square","./src/assets/square.png");
     this.load.image("player", "./src/assets/rundare.png");
     this.load.image("block", "./src/assets/block.png");
-    this.load.image("coin", "./src/assets/coin.png");
     this.load.image("floor", "./src/assets/floor.png");
     this.load.image("normalmap", "./src/assets/normalmap.png");
     this.load.image("bar", "./src/assets/bar.png");
@@ -237,10 +236,10 @@ export class GameoverScene extends Phaser.Scene {
   console.log(parseFloat(localStorage.getItem("totalClimbed")))
 
   let barStartPostX = this.sys.canvas.width/2-planet3.displayWidth/2+planet4.displayWidth/2;
-  let pointerStartPosX = barStartPostX + planet3.displayWidth/1000 * prevTotalClimbed -planet4.displayWidth;
-  let pointerEndPosX = barStartPostX + planet3.displayWidth/1000 * parseFloat(localStorage.getItem("totalClimbed")) - planet4.displayWidth;
+  let pointerStartPosX = barStartPostX + (planet3.displayWidth-planet4.displayWidth)/1000 * prevTotalClimbed;
+  let pointerEndPosX = barStartPostX + (planet3.displayWidth-planet4.displayWidth)/1000 * parseFloat(localStorage.getItem("totalClimbed")) ;
 
-  if (parseFloat(localStorage.getItem("totalClimbed")) > 200) {
+  if (parseFloat(localStorage.getItem("totalClimbed")) > 800) {
   //   console.log("yesh");
     pointerEndPosX = barStartPostX+planet3.displayWidth-planet4.displayWidth;
     localStorage.setItem("totalClimbed", "0");

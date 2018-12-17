@@ -82,7 +82,7 @@ export class Player extends Phaser.GameObjects.Sprite {
         this.body.setMaxVelocity(900*this.velocityMultiplier, 900*this.velocityMultiplier);
       }
       this.body.setAccelerationX(-8000*this.velocityMultiplier);
-      // this.setFlipX(true);
+      this.setFlipX(true);
     } 
     else
     {
@@ -122,8 +122,8 @@ export class Player extends Phaser.GameObjects.Sprite {
         let newFuel = parseFloat(localStorage.getItem("fuel"))-1;
         localStorage.setItem("fuel",newFuel.toString());
         this.fuelText.setText(newFuel+"");
-        this.fuelText.setX(this.getCenter().x-this.fuelText.displayWidth/2);
-        this.fuelText.setY(this.getCenter().y-this.fuelText.displayHeight/2);
+        this.fuelText.setX(this.getBottomLeft().x-this.fuelText.displayWidth);
+        this.fuelText.setY(this.getCenter().y+this.fuelText.displayHeight);
         console.log(localStorage.getItem("fuel"));
         if(!this.particles.emitters.length) {
           this.particles.createEmitter({
@@ -180,7 +180,7 @@ export class Player extends Phaser.GameObjects.Sprite {
 
   updateShader(): void {
     if( -this.body.velocity.y/1400 > 0) {
-      this.renderPipeline.setFloat1('time', 1-this.body.velocity.y/1400);
+      this.renderPipeline.setFloat1('time', 1-this.body.velocity.y/1000);
     } else {
       this.renderPipeline.setFloat1('time', 1);
     }

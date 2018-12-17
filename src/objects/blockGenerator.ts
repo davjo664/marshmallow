@@ -1,4 +1,5 @@
 import { Block } from "../objects/block";
+import { Player } from "./player";
 
 export class BlockGenerator {
     private currentScene: Phaser.Scene;
@@ -8,12 +9,14 @@ export class BlockGenerator {
     private highestBlockY: number;
     private frequency: number;
     private loop: Phaser.Time.TimerEvent;
+    private player: Player;
 
     constructor(params) {
         this.currentScene = params.scene;
         this.frequency = params.frequency;
         this.textureKey = params.key;
         this.floorY = params.floorY;
+        this.player = params.player;
         this.blocks = this.currentScene.physics.add.group({immovable: true});
 
         this.highestBlockY = this.floorY;
@@ -39,6 +42,12 @@ export class BlockGenerator {
                 lowestBlock = block;
             }
         });
+
+        if (this.player.body.y < y) {
+            console.log("player highest");
+            y = this.player.body.y;
+        }
+
         // Remove lowest block if it is more then 2*the screen size below the highest block
         // and if it is below the camera position.
         if (lowestBlock && lowestBlock.y > (y+this.currentScene.sys.canvas.height*2) && lowestBlock.y > -this.currentScene.cameras.main.scrollY) {
@@ -64,7 +73,7 @@ export class BlockGenerator {
       }
 
       startLoop() {
-        this.loop = this.currentScene.time.addEvent({ delay: 2000, callback: this.createBlock, callbackScope: this, loop: true });
+        this.loop = this.currentScene.time.addEvent({ delay: 1600, callback: this.createBlock, callbackScope: this, loop: true });
       }
 
       stopLoop() {

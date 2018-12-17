@@ -38,7 +38,7 @@ export class GameScene extends Phaser.Scene {
       physics: {
         arcade: {
           gravity: { y: 800 },
-          debug: true
+          debug: false
         }
       }
     });
@@ -47,9 +47,8 @@ export class GameScene extends Phaser.Scene {
   preload(): void {
 
     this.load.image("background","./src/assets/background.png");
-    this.load.image("player", "./src/assets/player.png");
+    this.load.image("player", "./src/assets/player2.png");
     this.load.image("block", "./src/assets/block.png");
-    this.load.image("coin", "./src/assets/coin.png");
     this.load.image("floor", "./src/assets/floor.png");
     this.load.image("normalmap", "./src/assets/normalmap.png");
     this.load.image("pause", "./src/assets/pause.png");
@@ -127,7 +126,8 @@ export class GameScene extends Phaser.Scene {
       frequency: this.sys.canvas.width/1.5,
       floorY: this.floor.body.y,
       key: "block",
-      loop: this.isTutorial ? false : true
+      loop: this.isTutorial ? false : true,
+      player:this.player
     })
 
     this.addGUIelement();
@@ -194,16 +194,16 @@ export class GameScene extends Phaser.Scene {
     this.currentClimbed.setInteractive();
 
     let pause = this.add.image(this.sys.canvas.width,0,'pause');
-    pause.setScale((this.sys.canvas.width/10)/pause.height,(this.sys.canvas.width/10)/pause.height);
-    pause.setX(this.sys.canvas.width-pause.displayWidth/2-pause.displayWidth/10);
-    pause.setY(pause.displayHeight/2+pause.displayHeight/10);
+    pause.setScale((this.sys.canvas.width/14)/pause.height,(this.sys.canvas.width/14)/pause.height);
+    pause.setX(this.sys.canvas.width-pause.displayWidth/2-pause.displayWidth/14);
+    pause.setY(pause.displayHeight/2+pause.displayHeight/14);
     pause.setScrollFactor(0); //Fixed to camera
     pause.setInteractive();
     pause.setDepth(5);
 
     let play = this.add.image(this.sys.canvas.width,0,'play');
-    play.setScale((this.sys.canvas.width/10)/play.height,(this.sys.canvas.width/10)/play.height);
-    play.setX(this.sys.canvas.width-play.displayWidth/2-play.displayWidth/10);
+    play.setScale((this.sys.canvas.width/14)/play.height,(this.sys.canvas.width/14)/play.height);
+    play.setX(this.sys.canvas.width-play.displayWidth/2-play.displayWidth/14);
     play.setY(pause.y);
     play.setScrollFactor(0); //Fixed to camera
     play.setInteractive();
@@ -211,9 +211,9 @@ export class GameScene extends Phaser.Scene {
     play.setAlpha(0);
 
     let restart = this.add.image(0,0,'restart');
-    restart.setScale((this.sys.canvas.width/10)/restart.height,(this.sys.canvas.width/10)/restart.height);
-    restart.setX(this.sys.canvas.width-restart.displayWidth/2-restart.displayWidth/10);
-    restart.setY(pause.y+restart.displayHeight+restart.displayHeight/10);
+    restart.setScale((this.sys.canvas.width/14)/restart.height,(this.sys.canvas.width/14)/restart.height);
+    restart.setX(this.sys.canvas.width-restart.displayWidth/2-restart.displayWidth/14);
+    restart.setY(pause.y+restart.displayHeight+restart.displayHeight/14);
     restart.setScrollFactor(0); //Fixed to camera
     restart.setInteractive();
     restart.setDepth(5);
