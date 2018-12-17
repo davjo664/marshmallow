@@ -131,7 +131,6 @@ export class GameScene extends Phaser.Scene {
     ).setScrollFactor(0); //Fixed to camera
 
     this.highestClimbed.setDepth(5);
-    
 
     this.currentClimbed = this.add.text(
       20,
@@ -200,6 +199,24 @@ export class GameScene extends Phaser.Scene {
     restart.setDepth(5);
     restart.setAlpha(0);
 
+    let mute = this.add.image(0,0,'mute');
+    mute.setScale((this.sys.canvas.width/14)/mute.height,(this.sys.canvas.width/14)/mute.height);
+    mute.setX(this.sys.canvas.width-mute.displayWidth/2-mute.displayWidth/14);
+    mute.setY(restart.y+mute.displayHeight+mute.displayHeight/14);
+    mute.setScrollFactor(0); //Fixed to camera
+    mute.setInteractive();
+    mute.setDepth(5);
+    mute.setAlpha(0);
+    
+    let unmute = this.add.image(0,0,'unmute');
+    unmute.setScale((this.sys.canvas.width/14)/unmute.height,(this.sys.canvas.width/14)/unmute.height);
+    unmute.setX(this.sys.canvas.width-unmute.displayWidth/2-unmute.displayWidth/14);
+    unmute.setY(restart.y+unmute.displayHeight+unmute.displayHeight/14);
+    unmute.setScrollFactor(0); //Fixed to camera
+    unmute.setInteractive();
+    unmute.setDepth(5);
+    unmute.setAlpha(0);
+
     if (this.isSuperJumpTutorial) {
       this.presshold = this.add.image(0,0,'presshold');
       this.presshold.setScale((this.sys.canvas.width/8)/this.presshold.height,(this.sys.canvas.width/8)/this.presshold.height);
@@ -257,6 +274,11 @@ export class GameScene extends Phaser.Scene {
       pause.setAlpha(0);
       play.setAlpha(1);
       restart.setAlpha(1);
+      if (this.sound.mute) {
+        unmute.setAlpha(1); 
+      } else {
+        mute.setAlpha(1);
+      }
       this.sound.pauseAll();
     });
 
@@ -265,12 +287,26 @@ export class GameScene extends Phaser.Scene {
       this.physics.world.resume();
       play.setAlpha(0);
       restart.setAlpha(0);
+      mute.setAlpha(0);
+      unmute.setAlpha(0);
       pause.setAlpha(1);
       this.sound.play('boogie');
     });
 
     restart.on('pointerdown', () => { 
       this.scene.manager.getScene('GameScene').scene.restart();
+    });
+
+    mute.on('pointerdown', () => {
+        mute.setAlpha(0);
+        unmute.setAlpha(1);
+        this.sound.mute = true;
+    });
+
+    unmute.on('pointerdown', () => {
+        mute.setAlpha(1);
+        unmute.setAlpha(0);
+        this.sound.mute = false;
     });
   }
 
