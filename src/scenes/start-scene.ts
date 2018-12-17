@@ -11,6 +11,9 @@ export class StartScene extends Phaser.Scene {
 
     this.load.image("title","./src/assets/title.png");
     this.load.atlas('flares', './src/assets/flares.png', './src/assets/flares.json');
+    this.load.audio('travels', ['./src/assets/travels.mp3']);
+    this.load.audio('boogie', ['./src/assets/boogie.mp3']);
+    this.load.audio('travels2', ['./src/assets/travels2.mp3']);
   }
 
   init(): void {
@@ -28,6 +31,14 @@ export class StartScene extends Phaser.Scene {
         // this.scene.launch('GameScene');
 
     }, this);
+
+    this.sound.add('travels');
+    this.sound.add('boogie');
+    this.sound.add('travels2');
+
+    var gameoverSong = this.sound.add('travels');
+    gameoverSong.addMarker({ name: 'travels2', start: 20, duration: 18.8, config: {} });
+    this.sound.play('travels');
   
 
     var planet = this.add.image(-1000, this.sys.canvas.height/2.5, 'title').setScale(0.4);

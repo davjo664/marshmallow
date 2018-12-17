@@ -30,6 +30,9 @@ export class GameoverScene extends Phaser.Scene {
 
   create(data): void {
 
+    this.sound.pauseAll();
+    this.sound.play('travels2');
+
     // Store
     console.log(data.climbed)
     console.log(localStorage.getItem("highscore"));

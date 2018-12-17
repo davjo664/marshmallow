@@ -88,6 +88,9 @@ export class GameScene extends Phaser.Scene {
     this.isTutorial = localStorage.getItem("highscore") ? false : true;
     this.isSuperJumpTutorial = localStorage.getItem("superJumpTutorial") === "1" ? true : false;
 
+    this.sound.pauseAll();
+    this.sound.play('boogie');
+
 
     //  Create a few images to check the perspective with
     // this.camera.create(-150, 0, -100, 'coin', null);
@@ -280,6 +283,7 @@ export class GameScene extends Phaser.Scene {
       pause.setAlpha(0);
       play.setAlpha(1);
       restart.setAlpha(1);
+      this.sound.pauseAll();
     });
 
     play.on('pointerdown', () => { 
@@ -288,6 +292,7 @@ export class GameScene extends Phaser.Scene {
       play.setAlpha(0);
       restart.setAlpha(0);
       pause.setAlpha(1);
+      this.sound.play('boogie');
     });
 
     restart.on('pointerdown', () => { 
